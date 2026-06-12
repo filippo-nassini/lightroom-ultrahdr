@@ -181,7 +181,7 @@ bool encodeUltraHdr(const HdrImage& hdr, const Clamps& clamps,
     sdr.data = jpeg.data();
     sdr.data_sz = jpeg.size();
     sdr.capacity = jpeg.size();
-    sdr.cg = (sdrCgamut == 1) ? UHDR_CG_DISPLAY_P3 : UHDR_CG_BT_709;  // sRGB primaries == BT.709
+    sdr.cg = gamutFromInt(sdrCgamut);  // 0 sRGB(BT.709) / 1 P3 / 2 Rec.2020(BT.2100)
     sdr.ct = UHDR_CT_UNSPECIFIED;   // JPEG carries its own transfer
     sdr.range = UHDR_CR_UNSPECIFIED;
 

@@ -28,7 +28,8 @@ local HDR_SPACES = {
 }
 local SDR_SPACES = {
 	{ title = "sRGB",       value = "sRGB" },
-	{ title = "Display P3", value = "p3" },
+	{ title = "Display P3", value = "DisplayP3" },
+	{ title = "Rec. 2020",  value = "Rec2020" },
 }
 
 local GUIDANCE =

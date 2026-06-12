@@ -19,7 +19,7 @@
 
 namespace {
 
-constexpr char kToolVersion[] = "0.1.0-dev";
+constexpr char kToolVersion[] = "1.0.0";
 
 void printUsage(const char* argv0) {
     std::printf(
@@ -35,7 +35,7 @@ void printUsage(const char* argv0) {
         "\n"
         "Options:\n"
         "  --cgamut <0|1|2> HDR color gamut: 0 Rec.709 (default), 1 P3, 2 Rec.2020\n"
-        "  --sgamut <0|1>   SDR color gamut: 0 sRGB (default), 1 Display P3\n"
+        "  --sgamut <0|1|2> SDR color gamut: 0 sRGB (default), 1 P3, 2 Rec.2020\n"
         "  --version        print version (incl. linked libultrahdr) and exit\n"
         "  --help           print this help and exit\n",
         kToolVersion, argv0);

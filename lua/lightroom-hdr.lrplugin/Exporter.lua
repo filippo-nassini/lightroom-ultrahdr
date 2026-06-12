@@ -97,7 +97,9 @@ end
 
 --[[
 Export the SDR rendition as a JPEG.
-  sdrColorSpace : "sRGB" (default) or "AdobeRGB" / "ProPhotoRGB" / "p3"
+  sdrColorSpace : "sRGB" (default), "DisplayP3", or "Rec2020"
+                  (verbatim Lightroom LR_export_colorSpace strings for 8-bit JPEG;
+                  note Display P3 is "DisplayP3" here, NOT the HDR TIFF's "p3_hdr")
   quality       : 0.0–1.0 (default 0.92)
 Returns path, err.
 ]]

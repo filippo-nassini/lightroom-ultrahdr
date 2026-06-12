@@ -26,7 +26,7 @@ end
 
 -- Map a gamut name to the uhdrtool integer flag value.
 ToolRunner.CGAMUT = { ["sRGB_hdr"] = 0, ["p3_hdr"] = 1, ["Rec2020_hdr"] = 2 }
-ToolRunner.SGAMUT = { ["sRGB"] = 0, ["p3"] = 1 }
+ToolRunner.SGAMUT = { ["sRGB"] = 0, ["DisplayP3"] = 1, ["Rec2020"] = 2 }
 
 --[[
 Build the command string.
