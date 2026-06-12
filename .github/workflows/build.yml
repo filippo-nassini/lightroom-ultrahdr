@@ -1,0 +1,63 @@
+name: build
+
+# When to run:
+#   - push to main / PRs / manual click  -> build + package, upload the bundle as a
+#     downloadable artifact (proves it still builds on a clean Windows box).
+#   - push of a version tag (v*)         -> all of the above, plus publish the
+#     bundle to a GitHub Release for that tag.
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows:
+    runs-on: windows-latest   # a fresh Windows machine provided by GitHub
+    steps:
+      # 1. Get the repository onto the runner (source only — libultrahdr is
+      #    fetched at configure time by CMake, not committed here).
+      - uses: actions/checkout@v4
+
+      # 2. libjpeg-turbo's SIMD code needs the NASM assembler. The runner
+      #    already has MSVC and CMake; NASM is the one extra prerequisite.
+      - name: Install NASM
+        uses: ilammy/setup-nasm@v1
+
+      # 3. Configure: read CMakeLists.txt, fetch libultrahdr, set up build/.
+      - name: Configure
+        run: cmake -B build
+
+      # 4. Build: compile uhdrtool + the fetched libultrahdr, static Release.
+      #    A POST_BUILD step in CMakeLists.txt copies the freshly-built exe into
+      #    lua/lightroom-hdr.lrplugin/bin/win/, so the bundle is ready to zip.
+      - name: Build
+        run: cmake --build build --config Release --target uhdrtool
+
+      # 5. Package: zip the .lrplugin bundle (Lua files + bin/win/uhdrtool.exe).
+      #    This is the single artifact a user installs in Lightroom.
+      - name: Package .lrplugin
+        shell: pwsh
+        run: |
+          $bundle = "lua/lightroom-hdr.lrplugin"
+          if (-not (Test-Path "$bundle/bin/win/uhdrtool.exe")) {
+            throw "uhdrtool.exe missing from bundle — POST_BUILD copy did not run"
+          }
+          Compress-Archive -Path $bundle -DestinationPath lightroom-hdr-windows.zip -Force
+
+      # 6. Always save the bundle so you can download it from the run's page.
+      - name: Upload bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lightroom-hdr-windows
+          path: lightroom-hdr-windows.zip
+
+      # 7. On a version tag only: publish the bundle to the GitHub Release.
+      #    softprops/action-gh-release creates the release for the tag (if needed)
+      #    and attaches the zip. GITHUB_TOKEN is provided automatically.
+      - name: Publish to Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: lightroom-hdr-windows.zip

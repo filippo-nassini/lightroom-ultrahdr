@@ -1,0 +1,25 @@
+# Build output
+/build/
+**/CMakeCache.txt
+**/CMakeFiles/
+
+# Compiled artifacts — never committed; shipped via GitHub Releases only.
+*.exe
+*.dll
+*.lib
+*.a
+*.o
+*.obj
+*.pdb
+*.ilk
+*.exp
+
+# Editor / OS
+.vs/
+.vscode/
+.DS_Store
+
+# Local-only working trees — not part of the shipped source repo.
+.claude/
+openspec/
+dev/
