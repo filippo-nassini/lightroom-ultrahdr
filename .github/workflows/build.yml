@@ -15,6 +15,9 @@ on:
 jobs:
   windows:
     runs-on: windows-latest   # a fresh Windows machine provided by GitHub
+    # Let the built-in token create the GitHub Release on a tag (step 7).
+    permissions:
+      contents: write
     steps:
       # 1. Get the repository onto the runner (source only — libultrahdr is
       #    fetched at configure time by CMake, not committed here).
