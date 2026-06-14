@@ -85,13 +85,15 @@ local function doMerge(context)
 	end
 
 	-- 4: reset the scratch folder, then export both renditions into it.
+	-- The optional short-edge resize is applied identically to both so they stay
+	-- dimensionally matched for uhdrtool.
 	resetScratch()
-	local hdrTiff, hdrErr = Exporter.exportHdrTiff(hdrPhoto, "uhdr_hdr_src", opts.hdrColorSpace)
+	local hdrTiff, hdrErr = Exporter.exportHdrTiff(hdrPhoto, "uhdr_hdr_src", opts.hdrColorSpace, opts.shortEdge)
 	if not hdrTiff then
 		LrDialogs.message("HDR export failed", tostring(hdrErr), "critical")
 		return
 	end
-	local sdrJpeg, sdrErr = Exporter.exportSdrJpeg(sdrPhoto, "uhdr_sdr_src", opts.sdrColorSpace)
+	local sdrJpeg, sdrErr = Exporter.exportSdrJpeg(sdrPhoto, "uhdr_sdr_src", opts.sdrColorSpace, opts.shortEdge)
 	if not sdrJpeg then
 		cleanup({ hdrTiff })
 		LrDialogs.message("SDR export failed", tostring(sdrErr), "critical")

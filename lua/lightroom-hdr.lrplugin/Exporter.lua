@@ -75,12 +75,33 @@ local function baseSettings(destDir, basename)
 	}
 end
 
+-- Apply an optional short-edge resize (in pixels) to an export settings table.
+-- When `shortEdgePx` is a positive number, both renditions of the same source are
+-- constrained to the same short-edge length, so they come out the same size and
+-- uhdrtool's dimension-match precondition still holds. The LR keys are verified
+-- against a saved export preset: the short-edge length lives in LR_size_maxHeight;
+-- LR_size_maxWidth is ignored in shortEdge mode but set defensively. When
+-- `shortEdgePx` is nil/non-positive the settings keep baseSettings' no-resize state.
+local function applyResize(settings, shortEdgePx)
+	if type(shortEdgePx) == "number" and shortEdgePx > 0 then
+		local px = math.floor(shortEdgePx)
+		settings.LR_size_doConstrain  = true
+		settings.LR_size_resizeType   = "shortEdge"
+		settings.LR_size_units        = "pixels"
+		settings.LR_size_maxHeight    = px
+		settings.LR_size_maxWidth     = px
+		settings.LR_size_doNotEnlarge = false
+	end
+	return settings
+end
+
 --[[
 Export the HDR rendition as a 32-bit float HDR TIFF.
   hdrColorSpace : key into Exporter.HDR_COLORSPACE (default "sRGB_hdr")
+  shortEdgePx   : optional positive short-edge resize in pixels (nil = full res)
 Returns path, err.
 ]]
-function Exporter.exportHdrTiff(photo, basename, hdrColorSpace)
+function Exporter.exportHdrTiff(photo, basename, hdrColorSpace, shortEdgePx)
 	local dir = Exporter.scratchDir()
 	local cs  = Exporter.HDR_COLORSPACE[hdrColorSpace or "sRGB_hdr"] or "sRGB_hdr"
 
@@ -91,6 +112,7 @@ function Exporter.exportHdrTiff(photo, basename, hdrColorSpace)
 	settings.LR_export_colorSpace     = cs
 	settings.LR_maximumCompatibility  = false
 	settings.LRtiff_compressionMethod = "compressionMethod_None"
+	applyResize(settings, shortEdgePx)
 
 	return exportOne(photo, settings)
 end
@@ -100,10 +122,11 @@ Export the SDR rendition as a JPEG.
   sdrColorSpace : "sRGB" (default), "DisplayP3", or "Rec2020"
                   (verbatim Lightroom LR_export_colorSpace strings for 8-bit JPEG;
                   note Display P3 is "DisplayP3" here, NOT the HDR TIFF's "p3_hdr")
+  shortEdgePx   : optional positive short-edge resize in pixels (nil = full res)
   quality       : 0.0–1.0 (default 0.92)
 Returns path, err.
 ]]
-function Exporter.exportSdrJpeg(photo, basename, sdrColorSpace, quality)
+function Exporter.exportSdrJpeg(photo, basename, sdrColorSpace, shortEdgePx, quality)
 	local dir = Exporter.scratchDir()
 
 	local settings = baseSettings(dir, basename)
@@ -111,6 +134,7 @@ function Exporter.exportSdrJpeg(photo, basename, sdrColorSpace, quality)
 	settings.LR_export_colorSpace = sdrColorSpace or "sRGB"
 	settings.LR_jpeg_quality      = quality or 0.92
 	settings.LR_export_bitDepth   = 8
+	applyResize(settings, shortEdgePx)
 
 	return exportOne(photo, settings)
 end

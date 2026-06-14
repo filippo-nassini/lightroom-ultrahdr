@@ -7,9 +7,10 @@ detected HDR/SDR assignment, a colour-space choice, an output-destination
 picker, and Run / Cancel.
 
 Returns a result table:
-  { run = true, outPath=, hdrColorSpace=, sdrColorSpace= }
-  { run = false }                                            -- cancelled
+  { run = true, outPath=, hdrColorSpace=, sdrColorSpace=, shortEdge= }
+  { run = false }                                            -- cancelled / invalid
   { run = true, swap = true, ... }                           -- user flipped HDR/SDR
+shortEdge is a positive integer (short-edge px) when resize is enabled, else nil.
 
 ------------------------------------------------------------------------------]]
 
@@ -61,6 +62,8 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 	props.sdrColorSpace = "sRGB"
 	props.outPath       = defaultOut
 	props.swap          = false
+	props.resizeOn      = false
+	props.resizeShortEdge = 500
 
 	local contents = f:column {
 		bind_to_object = props,
@@ -102,6 +105,21 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 		f:separator { fill_horizontal = 1 },
 
 		f:row {
+			f:checkbox {
+				title = "Resize short edge to",
+				value = LrView.bind("resizeOn"),
+			},
+			f:edit_field {
+				value = LrView.bind("resizeShortEdge"),
+				enabled = LrView.bind("resizeOn"),
+				width_in_chars = 6,
+			},
+			f:static_text { title = "px" },
+		},
+
+		f:separator { fill_horizontal = 1 },
+
+		f:row {
 			f:static_text { title = "Output:", width_in_chars = 8 },
 			f:edit_field { value = LrView.bind("outPath"), fill_horizontal = 1, width_in_chars = 30 },
 			f:push_button {
@@ -127,12 +145,30 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 	if result ~= "ok" then
 		return { run = false }
 	end
+
+	-- Resolve the optional short-edge resize. If the box is checked it must carry a
+	-- positive integer; checked-but-empty/non-positive is rejected before any export
+	-- so the failure is legible rather than surfacing later as an export/encoder error.
+	local shortEdge = nil
+	if props.resizeOn then
+		local px = tonumber(props.resizeShortEdge)
+		if not px or px < 1 then
+			LrDialogs.message(
+				"Invalid size",
+				"Enter a short-edge size in pixels, or uncheck Resize.",
+				"warning")
+			return { run = false }
+		end
+		shortEdge = math.floor(px)
+	end
+
 	return {
 		run           = true,
 		swap          = props.swap,
 		outPath       = props.outPath,
 		hdrColorSpace = props.hdrColorSpace,
 		sdrColorSpace = props.sdrColorSpace,
+		shortEdge     = shortEdge,
 	}
 end
 
