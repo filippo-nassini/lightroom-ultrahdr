@@ -25,7 +25,7 @@ Download the latest .zip from the  [Releases](../../releases) page, unzip it, an
 
 ## Usage
 
-1. Take your photo and create an HDR edit (HDR mode on) and an SDR edit of it.
+1. Take your photo and create an virtual copy of it. edit the copy with hdr mode enabled, and teh base image in sdr.
 2. Select both in the Library grid.
 3. **File ▸ Plug-in Extras ▸ Merge SDR + HDR to UltraHDR…**
 4. Pick an output location and run.
