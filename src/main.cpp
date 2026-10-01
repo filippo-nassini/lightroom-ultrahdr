@@ -36,6 +36,7 @@ void printUsage(const char* argv0) {
         "Options:\n"
         "  --cgamut <0|1|2> HDR color gamut: 0 Rec.709 (default), 1 P3, 2 Rec.2020\n"
         "  --sgamut <0|1|2> SDR color gamut: 0 sRGB (default), 1 P3, 2 Rec.2020\n"
+        "  --quality <int>  JPEG compression quality of the HDR gainmap (default 95)\n"
         "  --version        print version (incl. linked libultrahdr) and exit\n"
         "  --help           print this help and exit\n",
         kToolVersion, argv0);
@@ -60,6 +61,7 @@ int main(int argc, char** argv) {
     bool printClamps = false; // hidden: print computed -K/-L and stop
     int cgamut = 0;  // Rec.709
     int sgamut = 0;  // sRGB
+    int quality = 95;
 
     for (int i = 1; i < argc; ++i) {
         const char* a = argv[i];
@@ -87,6 +89,8 @@ int main(int argc, char** argv) {
             const char* v = needValue("--cgamut"); if (!v) return 2; cgamut = std::atoi(v);
         } else if (std::strcmp(a, "--sgamut") == 0) {
             const char* v = needValue("--sgamut"); if (!v) return 2; sgamut = std::atoi(v);
+        } else if (std::strcmp(a, "--quality") == 0) {
+            const char* v = needValue("--quality"); if (!v) return 2; quality = std::atoi(v);
         } else if (std::strcmp(a, "--dump-raw") == 0) {
             const char* v = needValue("--dump-raw"); if (!v) return 2; dumpRawPath = v;
         } else if (std::strcmp(a, "--print-clamps") == 0) {
@@ -146,7 +150,7 @@ int main(int argc, char** argv) {
     }
 
     // --- encode (scenario 3): fuse HDR buffer + SDR JPEG -> gain-map JPEG -----
-    if (!uhdrtool::encodeUltraHdr(hdr, clamps, sdrPath, cgamut, sgamut, outPath, err)) {
+    if (!uhdrtool::encodeUltraHdr(hdr, clamps, sdrPath, cgamut, sgamut, quality, outPath, err)) {
         std::fprintf(stderr, "error: %s\n", err.c_str());
         return 1;
     }
