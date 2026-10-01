@@ -33,7 +33,7 @@ Clamps computeClamps(const HdrImage& img, double percentile = 99.9, double margi
 // Returns true on success; on failure fills `error`.
 bool encodeUltraHdr(const HdrImage& hdr, const Clamps& clamps,
                     const std::string& sdrJpegPath, int hdrCgamut, int sdrCgamut,
-                    const std::string& outPath, std::string& error);
+                    int quality, const std::string& outPath, std::string& error);
 
 }  // namespace uhdrtool
 
