@@ -110,6 +110,7 @@ local function doMerge(context)
 		cgamut = ToolRunner.CGAMUT[opts.hdrColorSpace],
 		sgamut = ToolRunner.SGAMUT[opts.sdrColorSpace],
 		gainmapQuality = opts.gainmapQuality,
+		gainmapScale   = opts.gainmapScale,
 	}, binErr)
 
 	-- 6: report + cleanup.

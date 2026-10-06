@@ -124,7 +124,8 @@ Clamps computeClamps(const HdrImage& img, double percentile, double margin) {
 
 bool encodeUltraHdr(const HdrImage& hdr, const Clamps& clamps,
                     const std::string& sdrJpegPath, int hdrCgamut, int sdrCgamut,
-                    int gainmapQuality, const std::string& outPath, std::string& error) {
+                    int gainmapQuality, int gainmapScale,
+                    const std::string& outPath, std::string& error) {
     // --- read the SDR JPEG bytes (passed through untouched; never decoded) ---
     std::FILE* jf = std::fopen(sdrJpegPath.c_str(), "rb");
     if (!jf) { error = "cannot open SDR JPEG '" + sdrJpegPath + "'"; return false; }
@@ -210,6 +211,8 @@ bool encodeUltraHdr(const HdrImage& hdr, const Clamps& clamps,
     if (e.error_code != UHDR_CODEC_OK) return fail("set target display peak brightness", e);
     e = uhdr_enc_set_quality(enc, gainmapQuality, UHDR_GAIN_MAP_IMG);
     if (e.error_code != UHDR_CODEC_OK) return fail("set gain map compression quality", e);
+    e = uhdr_enc_set_gainmap_scale_factor(enc, gainmapScale);
+    if (e.error_code != UHDR_CODEC_OK) return fail("set gain map scale factor", e);
     e = uhdr_encode(enc);
     if (e.error_code != UHDR_CODEC_OK) return fail("encode", e);
 

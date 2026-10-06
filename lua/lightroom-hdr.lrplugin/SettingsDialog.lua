@@ -4,14 +4,16 @@ SettingsDialog.lua
 
 The modal window shown when the user runs the plugin: guidance text, the
 detected HDR/SDR assignment, a colour-space choice, an optional resize, the
-gain-map quality, an output-destination picker, and Run / Cancel.
+gain-map quality and resolution, an output-destination picker, and Run / Cancel.
 
 Returns a result table:
-  { run = true, outPath=, hdrColorSpace=, sdrColorSpace=, shortEdge=, gainmapQuality= }
+  { run = true, outPath=, hdrColorSpace=, sdrColorSpace=, shortEdge=, gainmapQuality=,
+    gainmapScale= }
   { run = false }                                            -- cancelled / invalid
   { run = true, swap = true, ... }                           -- user flipped HDR/SDR
 shortEdge is a positive integer (short-edge px) when resize is enabled, else nil.
 gainmapQuality is an integer 1–100 (JPEG quality of the gain map only).
+gainmapScale is 1, 2 or 4 (gain map stored at full / half / quarter resolution).
 
 ------------------------------------------------------------------------------]]
 
@@ -32,6 +34,11 @@ local SDR_SPACES = {
 	{ title = "sRGB",       value = "sRGB" },
 	{ title = "Display P3", value = "DisplayP3" },
 	{ title = "Rec. 2020",  value = "Rec2020" },
+}
+local GAINMAP_SCALES = {
+	{ title = "Full (1×)",    value = 1 },
+	{ title = "Half (2×)",    value = 2 },
+	{ title = "Quarter (4×)", value = 4 },
 }
 
 local GUIDANCE =
@@ -66,6 +73,7 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 	props.resizeOn      = false
 	props.resizeShortEdge = 500
 	props.gainmapQuality  = 95
+	props.gainmapScale    = 1
 
 	local contents = f:column {
 		bind_to_object = props,
@@ -126,6 +134,10 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 				width_in_chars = 6,
 			},
 			f:static_text { title = "(1–100; the SDR image is not recompressed)" },
+		},
+		f:row {
+			f:static_text { title = "Gain map resolution:", width_in_chars = 16 },
+			f:popup_menu { value = LrView.bind("gainmapScale"), items = GAINMAP_SCALES },
 		},
 
 		f:separator { fill_horizontal = 1 },
@@ -192,6 +204,7 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 		sdrColorSpace = props.sdrColorSpace,
 		shortEdge     = shortEdge,
 		gainmapQuality = quality,
+		gainmapScale   = props.gainmapScale,
 	}
 end
 

@@ -39,6 +39,9 @@ void printUsage(const char* argv0) {
         "  --gainmap-quality <1-100>\n"
         "                   JPEG quality of the gain map only (default 95); the SDR\n"
         "                   base image is passed through, not re-encoded\n"
+        "  --gainmap-scale <1-128>\n"
+        "                   store the gain map downscaled by this factor per dimension\n"
+        "                   (default 1 = full res, 2 = half, 4 = quarter); gain map only\n"
         "  --version        print version (incl. linked libultrahdr) and exit\n"
         "  --help           print this help and exit\n",
         kToolVersion, argv0);
@@ -64,6 +67,7 @@ int main(int argc, char** argv) {
     int cgamut = 0;  // Rec.709
     int sgamut = 0;  // sRGB
     int gainmapQuality = 95;  // libultrahdr's own gain-map default
+    int gainmapScale = 1;     // full resolution, libultrahdr's default
 
     for (int i = 1; i < argc; ++i) {
         const char* a = argv[i];
@@ -101,6 +105,16 @@ int main(int argc, char** argv) {
                 return 2;
             }
             gainmapQuality = static_cast<int>(q);
+        } else if (std::strcmp(a, "--gainmap-scale") == 0) {
+            const char* v = needValue("--gainmap-scale"); if (!v) return 2;
+            char* end = nullptr;
+            long s = std::strtol(v, &end, 10);
+            if (end == v || *end != '\0' || s < 1 || s > 128) {
+                std::fprintf(stderr,
+                    "error: --gainmap-scale must be an integer from 1 to 128 (got '%s')\n", v);
+                return 2;
+            }
+            gainmapScale = static_cast<int>(s);
         } else if (std::strcmp(a, "--dump-raw") == 0) {
             const char* v = needValue("--dump-raw"); if (!v) return 2; dumpRawPath = v;
         } else if (std::strcmp(a, "--print-clamps") == 0) {
@@ -160,7 +174,8 @@ int main(int argc, char** argv) {
     }
 
     // --- encode (scenario 3): fuse HDR buffer + SDR JPEG -> gain-map JPEG -----
-    if (!uhdrtool::encodeUltraHdr(hdr, clamps, sdrPath, cgamut, sgamut, gainmapQuality, outPath, err)) {
+    if (!uhdrtool::encodeUltraHdr(hdr, clamps, sdrPath, cgamut, sgamut, gainmapQuality,
+                                  gainmapScale, outPath, err)) {
         std::fprintf(stderr, "error: %s\n", err.c_str());
         return 1;
     }
