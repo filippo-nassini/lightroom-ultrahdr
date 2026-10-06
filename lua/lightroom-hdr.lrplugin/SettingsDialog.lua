@@ -3,14 +3,15 @@
 SettingsDialog.lua
 
 The modal window shown when the user runs the plugin: guidance text, the
-detected HDR/SDR assignment, a colour-space choice, an output-destination
-picker, and Run / Cancel.
+detected HDR/SDR assignment, a colour-space choice, an optional resize, the
+gain-map quality, an output-destination picker, and Run / Cancel.
 
 Returns a result table:
-  { run = true, outPath=, hdrColorSpace=, sdrColorSpace=, shortEdge= }
+  { run = true, outPath=, hdrColorSpace=, sdrColorSpace=, shortEdge=, gainmapQuality= }
   { run = false }                                            -- cancelled / invalid
   { run = true, swap = true, ... }                           -- user flipped HDR/SDR
 shortEdge is a positive integer (short-edge px) when resize is enabled, else nil.
+gainmapQuality is an integer 1–100 (JPEG quality of the gain map only).
 
 ------------------------------------------------------------------------------]]
 
@@ -64,6 +65,7 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 	props.swap          = false
 	props.resizeOn      = false
 	props.resizeShortEdge = 500
+	props.gainmapQuality  = 95
 
 	local contents = f:column {
 		bind_to_object = props,
@@ -117,6 +119,15 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 			f:static_text { title = "px" },
 		},
 
+		f:row {
+			f:static_text { title = "Gain map quality:", width_in_chars = 16 },
+			f:edit_field {
+				value = LrView.bind("gainmapQuality"),
+				width_in_chars = 6,
+			},
+			f:static_text { title = "(1–100; the SDR image is not recompressed)" },
+		},
+
 		f:separator { fill_horizontal = 1 },
 
 		f:row {
@@ -162,6 +173,17 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 		shortEdge = math.floor(px)
 	end
 
+	-- Gain-map quality must be a whole number in 1–100; reject anything else here so
+	-- the user gets a clear message instead of a uhdrtool argument error after export.
+	local quality = tonumber(props.gainmapQuality)
+	if not quality or quality ~= math.floor(quality) or quality < 1 or quality > 100 then
+		LrDialogs.message(
+			"Invalid gain map quality",
+			"Enter a whole number from 1 to 100 for the gain map quality.",
+			"warning")
+		return { run = false }
+	end
+
 	return {
 		run           = true,
 		swap          = props.swap,
@@ -169,6 +191,7 @@ function SettingsDialog.present(ctx, hdrPhoto, sdrPhoto, defaultOut)
 		hdrColorSpace = props.hdrColorSpace,
 		sdrColorSpace = props.sdrColorSpace,
 		shortEdge     = shortEdge,
+		gainmapQuality = quality,
 	}
 end
 

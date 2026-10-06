@@ -6,6 +6,7 @@ Build and run the `uhdrtool` command line via LrTasks.execute.
 
 Contract (design D8): all inputs and the output are plain CLI arguments —
     uhdrtool --hdr <tiff> --sdr <jpg> --out <final.jpg> [--cgamut N] [--sgamut N]
+                 [--gainmap-quality Q]
 
 Quoting: every path is wrapped in double quotes. On Windows the WHOLE command is
 additionally wrapped in an outer pair of quotes, because cmd.exe strips one layer
@@ -30,7 +31,7 @@ ToolRunner.SGAMUT = { ["sRGB"] = 0, ["DisplayP3"] = 1, ["Rec2020"] = 2 }
 
 --[[
 Build the command string.
-  spec = { binary=, hdr=, sdr=, out=, cgamut=<int?>, sgamut=<int?> }
+  spec = { binary=, hdr=, sdr=, out=, cgamut=<int?>, sgamut=<int?>, gainmapQuality=<int?> }
 ]]
 function ToolRunner.buildCommand(spec)
 	local parts = {
@@ -41,6 +42,9 @@ function ToolRunner.buildCommand(spec)
 	}
 	if spec.cgamut then parts[#parts + 1] = "--cgamut"; parts[#parts + 1] = tostring(spec.cgamut) end
 	if spec.sgamut then parts[#parts + 1] = "--sgamut"; parts[#parts + 1] = tostring(spec.sgamut) end
+	if spec.gainmapQuality then
+		parts[#parts + 1] = "--gainmap-quality"; parts[#parts + 1] = tostring(spec.gainmapQuality)
+	end
 
 	local cmd = table.concat(parts, " ")
 	if WIN_ENV then

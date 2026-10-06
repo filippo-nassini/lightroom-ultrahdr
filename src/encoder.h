@@ -29,11 +29,11 @@ Clamps computeClamps(const HdrImage& img, double percentile = 99.9, double margi
 
 // Encode scenario 3. `hdrCgamut`/`sdrCgamut` are the libultrahdr color-gamut
 // enum values (0/1/2 and 0/1). Reads `sdrJpegPath` bytes, registers both
-// intents, sets K/L, encodes, and writes the gain-map JPEG to `outPath`.
+// intents, sets K/L and the gain-map JPEG quality (1-100), encodes, and writes the gain-map JPEG to `outPath`.
 // Returns true on success; on failure fills `error`.
 bool encodeUltraHdr(const HdrImage& hdr, const Clamps& clamps,
                     const std::string& sdrJpegPath, int hdrCgamut, int sdrCgamut,
-                    int quality, const std::string& outPath, std::string& error);
+                    int gainmapQuality, const std::string& outPath, std::string& error);
 
 }  // namespace uhdrtool
 
