@@ -1,15 +1,14 @@
 name: build
 
 # When to run:
-#   - push to main / PRs / manual click  -> build + package, upload the bundle as a
-#     downloadable artifact (proves it still builds on a clean Windows box).
-#   - push of a version tag (v*)         -> all of the above, plus publish the
-#     bundle to a GitHub Release for that tag.
+#   - push of a version tag (v*, e.g. v1.0.2) -> build + package, upload the
+#     bundle as an artifact, and publish it to a GitHub Release for that tag.
+#   - manual click (Actions tab -> build -> Run workflow) -> build + package only;
+#     the Release step is skipped because the run isn't on a tag.
+# Plain pushes to main and pull requests do NOT build.
 on:
   push:
-    branches: [main]
     tags: ["v*"]
-  pull_request:
   workflow_dispatch:
 
 jobs:
